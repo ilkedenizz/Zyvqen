@@ -1,30 +1,85 @@
+import type { ChangeEvent } from 'react';
+import type { GridSettings } from '../App';
 import './SettingsPanel.css';
 
-export function SettingsPanel() {
+interface SettingsPanelProps {
+  gridSettings: GridSettings;
+  onSettingsChange: (settings: GridSettings) => void;
+  validationError: string | null;
+}
+
+export function SettingsPanel({ gridSettings, onSettingsChange, validationError }: SettingsPanelProps) {
+  const handleChange = (field: keyof GridSettings) => (e: ChangeEvent<HTMLInputElement>) => {
+    let val = parseInt(e.target.value, 10);
+    if (isNaN(val)) val = 0;
+    
+    // Enforce minimums
+    if (field === 'columns' || field === 'rows') {
+      val = Math.max(1, val);
+    } else {
+      val = Math.max(0, val);
+    }
+
+    onSettingsChange({
+      ...gridSettings,
+      [field]: val
+    });
+  };
+
   return (
     <div className="panel settings-panel">
       <h2 className="panel-title">Grid Settings</h2>
+      
+      {validationError && (
+        <div className="settings-error">
+          {validationError}
+        </div>
+      )}
       
       <div className="settings-group">
         <div className="setting-row">
           <div className="input-group">
             <label className="label">Columns</label>
-            <input type="number" className="input-field" defaultValue={4} min={1} />
+            <input 
+              type="number" 
+              className="input-field" 
+              value={gridSettings.columns} 
+              onChange={handleChange('columns')} 
+              min={1} 
+            />
           </div>
           <div className="input-group">
             <label className="label">Rows</label>
-            <input type="number" className="input-field" defaultValue={4} min={1} />
+            <input 
+              type="number" 
+              className="input-field" 
+              value={gridSettings.rows} 
+              onChange={handleChange('rows')} 
+              min={1} 
+            />
           </div>
         </div>
 
         <div className="setting-row">
           <div className="input-group">
             <label className="label">Padding</label>
-            <input type="number" className="input-field" defaultValue={0} min={0} />
+            <input 
+              type="number" 
+              className="input-field" 
+              value={gridSettings.padding} 
+              onChange={handleChange('padding')} 
+              min={0} 
+            />
           </div>
           <div className="input-group">
             <label className="label">Spacing</label>
-            <input type="number" className="input-field" defaultValue={0} min={0} />
+            <input 
+              type="number" 
+              className="input-field" 
+              value={gridSettings.spacing} 
+              onChange={handleChange('spacing')} 
+              min={0} 
+            />
           </div>
         </div>
       </div>
