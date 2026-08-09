@@ -68,3 +68,17 @@
 .upload-actions {
   margin-left: var(--spacing-xl);
 }
+
+.upload-dropzone.drag-active {
+  border-color: var(--accent-color);
+  background-color: var(--bg-hover);
+  transform: scale(1.01);
+}
+
+.upload-error {
+  color: #ff5555;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: calc(var(--spacing-md) * -1);
+}
