@@ -11,8 +11,10 @@ export function UploadZone() {
       <div className="upload-dropzone">
         <div className="dropzone-content">
           <div className="upload-icon">📁</div>
-          <p className="upload-text">Drop your sprite here</p>
-          <p className="upload-hint">Supports PNG, JPG, and WebP</p>
+          <div className="upload-text-group">
+            <p className="upload-text">Drop your sprite here</p>
+            <p className="upload-hint">Supports PNG, JPG, and WebP</p>
+          </div>
           <div className="upload-actions">
             <button className="button-primary">Browse files</button>
           </div>

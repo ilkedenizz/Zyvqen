@@ -51,13 +51,13 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-sm);
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  font-size: 16px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
   transition: all var(--transition-speed);
 }
 
 .theme-toggle:hover {
   background-color: var(--bg-hover);
-  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
