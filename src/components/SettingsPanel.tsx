@@ -80,105 +80,167 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError,
           throw new Error("Could not detect a reliable grid.");
         }
 
-        const W = maxX - minX + 1;
-        const H = maxY - minY + 1;
-
-        const colSums = new Float32Array(W);
-        const rowSums = new Float32Array(H);
+        const colSums = new Float32Array(canvas.width);
+        const rowSums = new Float32Array(canvas.height);
 
         for (let y = minY; y <= maxY; y++) {
           for (let x = minX; x <= maxX; x++) {
             const alpha = data[(y * canvas.width + x) * 4 + 3];
             if (alpha > 10) {
-              colSums[x - minX] += 1;
-              rowSums[y - minY] += 1;
+              colSums[x] += 1;
+              rowSums[y] += 1;
             }
           }
         }
 
-        const detectAxis = (sums: Float32Array, length: number, minCoord: number) => {
-          const totalPixels = sums.reduce((a, b) => a + b, 0);
-          if (totalPixels === 0) return null;
-
-          const candidates = [];
-          for (let f = 8; f <= length; f++) {
-            const proj = new Float32Array(f);
-            for (let i = 0; i < length; i++) {
-              proj[i % f] += sums[i];
-            }
-
-            let minVal = proj[0];
-            for (let k = 1; k < f; k++) {
-              if (proj[k] < minVal) minVal = proj[k];
-            }
-
-            const minIndices = [];
-            for (let k = 0; k < f; k++) {
-              if (proj[k] === minVal) minIndices.push(k);
-            }
-            const gapK = minIndices[Math.floor(minIndices.length / 2)];
-
-            const expected = totalPixels / f;
-            const score = expected > 0 ? (minVal / expected) + (f / length) * 0.2 : Infinity;
-            candidates.push({ f, score, gapK, minVal, expected });
+        const computeDistToContent = (sums: Float32Array, len: number) => {
+          const dist = new Int32Array(len);
+          let last = -999999;
+          for (let i = 0; i < len; i++) {
+            if (sums[i] > 0) last = i;
+            dist[i] = i - last;
           }
-
-          if (candidates.length === 0) return null;
-          candidates.sort((a, b) => a.score - b.score);
-          const best = candidates[0];
-          
-          const secondBest = candidates.find(c => Math.abs(c.f - best.f) > best.f * 0.2);
-          const margin = secondBest ? (secondBest.score - best.score) : Infinity;
-
-          let offset = minCoord + best.gapK;
-          if (best.gapK > 0) {
-            offset -= best.f;
+          last = 999999;
+          for (let i = len - 1; i >= 0; i--) {
+            if (sums[i] > 0) last = i;
+            dist[i] = Math.min(dist[i], last - i);
           }
-
-          const count = Math.ceil((minCoord + length - offset) / best.f);
-
-          return {
-            frameSize: best.f,
-            offset: offset,
-            count: count,
-            margin: margin,
-            score: best.score
-          };
+          return dist;
         };
 
-        const resX = detectAxis(colSums, W, minX);
-        const resY = detectAxis(rowSums, H, minY);
+        const computePrefixSums = (sums: Float32Array, len: number) => {
+          const prefix = new Float32Array(len + 1);
+          for (let i = 0; i < len; i++) {
+            prefix[i + 1] = prefix[i] + sums[i];
+          }
+          return prefix;
+        };
 
-        if (!resX || !resY) {
+        const distX = computeDistToContent(colSums, canvas.width);
+        const distY = computeDistToContent(rowSums, canvas.height);
+        const prefixX = computePrefixSums(colSums, canvas.width);
+        const prefixY = computePrefixSums(rowSums, canvas.height);
+
+        const analyzeAxis = (sums: Float32Array, distToContent: Int32Array, prefixSums: Float32Array, W_full: number, spanStart: number, spanEnd: number, maxC: number) => {
+          const span = spanEnd - spanStart + 1;
+          const totalPixels = sums.reduce((a, b) => a + b, 0);
+          const bestResults = []; 
+
+          for (let c = 1; c <= maxC; c++) {
+            let bestFw = 0;
+            let bestOffset = 0;
+            let bestScore = Infinity;
+
+            const minFw = Math.max(4, Math.floor(span / c));
+            const maxFw = Math.floor(W_full / c);
+
+            if (minFw > maxFw) continue;
+            const tolerance = 5;
+
+            for (let fw = minFw; fw <= maxFw; fw++) {
+              const minOffset = Math.max(0, spanEnd - c * fw + 1 - tolerance);
+              const maxOffset = Math.min(spanStart + tolerance, W_full - c * fw);
+
+              if (minOffset > maxOffset) continue;
+
+              for (let offset = minOffset; offset <= maxOffset; offset++) {
+                let cutPixels = 0;
+                let gapReward = 0;
+
+                for (let k = 0; k <= c; k++) {
+                  const gx = offset + k * fw;
+                  
+                  if (k > 0 && k < c) {
+                    const margin = distToContent[gx] || 0;
+                    if (margin > 0) {
+                      gapReward += 1000 + margin * 100;
+                    }
+                  }
+
+                  for (let dx = -1; dx <= 1; dx++) {
+                    const x = gx + dx;
+                    if (x >= 0 && x < W_full) {
+                      cutPixels += sums[x];
+                    }
+                  }
+                }
+
+                let emptyFrames = 0;
+                for (let k = 0; k < c; k++) {
+                  const fStart = offset + k * fw;
+                  const fEnd = offset + (k + 1) * fw;
+                  const endIdx = Math.min(W_full, fEnd);
+                  const startIdx = Math.max(0, fStart);
+                  const content = prefixSums[endIdx] - prefixSums[startIdx];
+                  if (content < totalPixels * 0.005 / c) {
+                    emptyFrames++;
+                  }
+                }
+
+                let score = (cutPixels / totalPixels) * 200000;
+                score -= gapReward;
+                score += emptyFrames * 5000;
+                score += c * 200; 
+
+                if (score < bestScore) {
+                  bestScore = score;
+                  bestFw = fw;
+                  bestOffset = offset;
+                }
+              }
+            }
+
+            if (bestScore !== Infinity) {
+              bestResults.push({ c, fw: bestFw, offset: bestOffset, score: bestScore });
+            }
+          }
+
+          bestResults.sort((a, b) => a.score - b.score);
+          return bestResults;
+        };
+
+        const resX = analyzeAxis(colSums, distX, prefixX, canvas.width, minX, maxX, 12);
+        const resY = analyzeAxis(rowSums, distY, prefixY, canvas.height, minY, maxY, 12);
+
+        if (resX.length === 0 || resY.length === 0) {
           throw new Error("Could not detect a reliable grid.");
         }
 
-        let finalColumns = resX.count;
-        let finalRows = resY.count;
-        let finalOffsetX = resX.offset;
-        let finalOffsetY = resY.offset;
-        let finalFrameWidth = resX.frameSize;
-        let finalFrameHeight = resY.frameSize;
-        let confidence: 'High' | 'Medium' | 'Low' = 'High';
+        const bestX = resX[0];
+        const bestY = resY[0];
+        
+        const diffX = resX.find(r => r.c !== bestX.c);
+        const diffY = resY.find(r => r.c !== bestY.c);
 
-        const minMargin = Math.min(resX.margin, resY.margin);
-        const maxScore = Math.max(resX.score, resY.score);
+        const marginX = diffX ? (diffX.score - bestX.score) : Infinity;
+        const marginY = diffY ? (diffY.score - bestY.score) : Infinity;
 
-        if (minMargin > 0.05 && maxScore < 0.1) {
-            confidence = 'High';
-        } else if (minMargin > 0.02 && maxScore < 0.2) {
-            confidence = 'Medium';
-        } else {
-            confidence = 'Low';
+        let confidence: 'High' | 'Medium' | 'Low' = 'Low';
+        const maxScore = Math.max(bestX.score, bestY.score);
+        const minScoreMargin = Math.min(marginX, marginY);
+
+        if (maxScore < 0) {
+            if (minScoreMargin > 500) {
+                confidence = 'High';
+            } else if (minScoreMargin > 100) {
+                confidence = 'Medium';
+            }
         }
+
+        let finalColumns = bestX.c;
+        let finalRows = bestY.c;
+        let finalOffsetX = bestX.offset;
+        let finalOffsetY = bestY.offset;
+        let finalFrameWidth = bestX.fw;
+        let finalFrameHeight = bestY.fw;
 
         if (confidence === 'Low') {
             finalColumns = gridSettings.columns;
             finalRows = gridSettings.rows;
             finalOffsetX = minX;
             finalOffsetY = minY;
-            finalFrameWidth = Math.floor(W / finalColumns);
-            finalFrameHeight = Math.floor(H / finalRows);
+            finalFrameWidth = Math.floor((maxX - minX + 1) / finalColumns);
+            finalFrameHeight = Math.floor((maxY - minY + 1) / finalRows);
         }
 
         setDetectionResult({
