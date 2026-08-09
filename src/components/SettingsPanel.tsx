@@ -39,6 +39,29 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError 
       <div className="settings-group">
         <div className="setting-row">
           <div className="input-group">
+            <label className="label">Offset X</label>
+            <input 
+              type="number" 
+              className="input-field" 
+              value={gridSettings.offsetX} 
+              onChange={handleChange('offsetX')} 
+              min={0} 
+            />
+          </div>
+          <div className="input-group">
+            <label className="label">Offset Y</label>
+            <input 
+              type="number" 
+              className="input-field" 
+              value={gridSettings.offsetY} 
+              onChange={handleChange('offsetY')} 
+              min={0} 
+            />
+          </div>
+        </div>
+
+        <div className="setting-row">
+          <div className="input-group">
             <label className="label">Columns</label>
             <input 
               type="number" 

@@ -35,19 +35,19 @@ export function PreviewPanel({
   let frameHeight = 0;
   
   if (dimensions && gridSettings) {
-    const { columns, rows, padding, spacing } = gridSettings;
+    const { columns, rows, padding, spacing, offsetX, offsetY } = gridSettings;
     totalFrames = columns * rows;
-    frameWidth = Math.floor((dimensions.width - padding * 2 - spacing * (columns - 1)) / columns);
-    frameHeight = Math.floor((dimensions.height - padding * 2 - spacing * (rows - 1)) / rows);
+    frameWidth = Math.floor((dimensions.width - offsetX - padding * 2 - spacing * (columns - 1)) / columns);
+    frameHeight = Math.floor((dimensions.height - offsetY - padding * 2 - spacing * (rows - 1)) / rows);
   }
 
   const renderGridOverlay = () => {
     if (!dimensions || !gridSettings) return null;
-    const { columns, rows, padding, spacing } = gridSettings;
+    const { columns, rows, padding, spacing, offsetX, offsetY } = gridSettings;
     
     // Convert to percentages relative to original image size
-    const pX = (padding / dimensions.width) * 100;
-    const pY = (padding / dimensions.height) * 100;
+    const pX = ((offsetX + padding) / dimensions.width) * 100;
+    const pY = ((offsetY + padding) / dimensions.height) * 100;
     const sX = (spacing / dimensions.width) * 100;
     const sY = (spacing / dimensions.height) * 100;
     const fw = (frameWidth / dimensions.width) * 100;

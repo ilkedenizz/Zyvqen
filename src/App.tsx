@@ -16,6 +16,8 @@ export interface GridSettings {
   rows: number;
   padding: number;
   spacing: number;
+  offsetX: number;
+  offsetY: number;
 }
 
 function App() {
@@ -27,7 +29,9 @@ function App() {
     columns: 4,
     rows: 4,
     padding: 0,
-    spacing: 0
+    spacing: 0,
+    offsetX: 0,
+    offsetY: 0
   });
   
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
@@ -69,11 +73,11 @@ function App() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const { columns, rows, padding, spacing } = gridSettings;
+    const { columns, rows, padding, spacing, offsetX, offsetY } = gridSettings;
     const totalFrames = columns * rows;
     
-    const frameWidth = (imageDimensions.width - padding * 2 - spacing * (columns - 1)) / columns;
-    const frameHeight = (imageDimensions.height - padding * 2 - spacing * (rows - 1)) / rows;
+    const frameWidth = (imageDimensions.width - offsetX - padding * 2 - spacing * (columns - 1)) / columns;
+    const frameHeight = (imageDimensions.height - offsetY - padding * 2 - spacing * (rows - 1)) / rows;
     
     // Bounds check
     if (frameWidth <= 0 || frameHeight <= 0) return;
@@ -87,8 +91,8 @@ function App() {
       let currentFrame = 0;
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < columns; c++) {
-          const sourceX = padding + c * (frameWidth + spacing);
-          const sourceY = padding + r * (frameHeight + spacing);
+          const sourceX = offsetX + padding + c * (frameWidth + spacing);
+          const sourceY = offsetY + padding + r * (frameHeight + spacing);
           const destX = currentFrame * frameWidth;
           
           ctx.drawImage(
@@ -131,9 +135,9 @@ function App() {
   // Validation
   let gridExceedsBounds = false;
   if (imageDimensions) {
-    const { columns, rows, padding, spacing } = gridSettings;
-    const totalW = padding * 2 + spacing * (columns - 1) + columns; // min 1px per frame
-    const totalH = padding * 2 + spacing * (rows - 1) + rows;
+    const { columns, rows, padding, spacing, offsetX, offsetY } = gridSettings;
+    const totalW = offsetX + padding * 2 + spacing * (columns - 1) + columns; // min 1px per frame
+    const totalH = offsetY + padding * 2 + spacing * (rows - 1) + rows;
     if (totalW > imageDimensions.width || totalH > imageDimensions.height) {
       gridExceedsBounds = true;
     }
