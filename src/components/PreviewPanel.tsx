@@ -1,4 +1,5 @@
 import type { ImageDimensions, GridSettings } from '../App';
+import { AnimationPreview } from './AnimationPreview';
 import './PreviewPanel.css';
 
 interface PreviewPanelProps {
@@ -142,8 +143,18 @@ export function PreviewPanel({
                 {renderGridOverlay()}
               </div>
             ) : (
-              <div className="image-wrapper">
-                <img src={generatedImageUrl || ''} alt="Sprite Output" className="preview-image output-image" />
+              <div className="output-preview-container">
+                <div className="image-wrapper">
+                  <img src={generatedImageUrl || ''} alt="Sprite Output" className="preview-image output-image" />
+                </div>
+                {generatedImageUrl && totalFrames > 0 && frameWidth > 0 && frameHeight > 0 && (
+                  <AnimationPreview 
+                    generatedImageUrl={generatedImageUrl}
+                    totalFrames={totalFrames}
+                    frameWidth={frameWidth}
+                    frameHeight={frameHeight}
+                  />
+                )}
               </div>
             )}
           </div>
