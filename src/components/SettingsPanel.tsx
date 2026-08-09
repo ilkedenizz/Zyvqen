@@ -80,64 +80,114 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError,
           throw new Error("Could not detect a reliable grid.");
         }
 
-        let rowsDetected = 0;
-        let inContentY = false;
+        const W = maxX - minX + 1;
+        const H = maxY - minY + 1;
+
+        const colSums = new Float32Array(W);
+        const rowSums = new Float32Array(H);
+
         for (let y = minY; y <= maxY; y++) {
-          let rowHasContent = false;
           for (let x = minX; x <= maxX; x++) {
-            if (data[(y * canvas.width + x) * 4 + 3] > 10) {
-              rowHasContent = true;
-              break;
+            const alpha = data[(y * canvas.width + x) * 4 + 3];
+            if (alpha > 10) {
+              colSums[x - minX] += 1;
+              rowSums[y - minY] += 1;
             }
           }
-          if (rowHasContent && !inContentY) {
-            rowsDetected++;
-            inContentY = true;
-          } else if (!rowHasContent && inContentY) {
-            inContentY = false;
-          }
         }
 
-        let colsDetected = 0;
-        let inContentX = false;
-        for (let x = minX; x <= maxX; x++) {
-          let colHasContent = false;
-          for (let y = minY; y <= maxY; y++) {
-            if (data[(y * canvas.width + x) * 4 + 3] > 10) {
-              colHasContent = true;
-              break;
+        const detectAxis = (sums: Float32Array, length: number, minCoord: number) => {
+          const totalPixels = sums.reduce((a, b) => a + b, 0);
+          if (totalPixels === 0) return null;
+
+          const candidates = [];
+          for (let f = 8; f <= length; f++) {
+            const proj = new Float32Array(f);
+            for (let i = 0; i < length; i++) {
+              proj[i % f] += sums[i];
             }
+
+            let minVal = proj[0];
+            for (let k = 1; k < f; k++) {
+              if (proj[k] < minVal) minVal = proj[k];
+            }
+
+            const minIndices = [];
+            for (let k = 0; k < f; k++) {
+              if (proj[k] === minVal) minIndices.push(k);
+            }
+            const gapK = minIndices[Math.floor(minIndices.length / 2)];
+
+            const expected = totalPixels / f;
+            const score = expected > 0 ? (minVal / expected) + (f / length) * 0.2 : Infinity;
+            candidates.push({ f, score, gapK, minVal, expected });
           }
-          if (colHasContent && !inContentX) {
-            colsDetected++;
-            inContentX = true;
-          } else if (!colHasContent && inContentX) {
-            inContentX = false;
+
+          if (candidates.length === 0) return null;
+          candidates.sort((a, b) => a.score - b.score);
+          const best = candidates[0];
+          
+          const secondBest = candidates.find(c => Math.abs(c.f - best.f) > best.f * 0.2);
+          const margin = secondBest ? (secondBest.score - best.score) : Infinity;
+
+          let offset = minCoord + best.gapK;
+          if (best.gapK > 0) {
+            offset -= best.f;
           }
+
+          const count = Math.ceil((minCoord + length - offset) / best.f);
+
+          return {
+            frameSize: best.f,
+            offset: offset,
+            count: count,
+            margin: margin,
+            score: best.score
+          };
+        };
+
+        const resX = detectAxis(colSums, W, minX);
+        const resY = detectAxis(rowSums, H, minY);
+
+        if (!resX || !resY) {
+          throw new Error("Could not detect a reliable grid.");
         }
 
-        let cols = gridSettings.columns;
-        let rows = gridSettings.rows;
-        let confidence: 'High' | 'Medium' | 'Low' = 'Medium';
+        let finalColumns = resX.count;
+        let finalRows = resY.count;
+        let finalOffsetX = resX.offset;
+        let finalOffsetY = resY.offset;
+        let finalFrameWidth = resX.frameSize;
+        let finalFrameHeight = resY.frameSize;
+        let confidence: 'High' | 'Medium' | 'Low' = 'High';
 
-        if (colsDetected > 1 && rowsDetected > 1) {
-          cols = colsDetected;
-          rows = rowsDetected;
-          confidence = 'High';
+        const minMargin = Math.min(resX.margin, resY.margin);
+        const maxScore = Math.max(resX.score, resY.score);
+
+        if (minMargin > 0.05 && maxScore < 0.1) {
+            confidence = 'High';
+        } else if (minMargin > 0.02 && maxScore < 0.2) {
+            confidence = 'Medium';
+        } else {
+            confidence = 'Low';
         }
 
-        const contentWidth = maxX - minX + 1;
-        const contentHeight = maxY - minY + 1;
-        const expectedFrameWidth = Math.floor(contentWidth / cols);
-        const expectedFrameHeight = Math.floor(contentHeight / rows);
+        if (confidence === 'Low') {
+            finalColumns = gridSettings.columns;
+            finalRows = gridSettings.rows;
+            finalOffsetX = minX;
+            finalOffsetY = minY;
+            finalFrameWidth = Math.floor(W / finalColumns);
+            finalFrameHeight = Math.floor(H / finalRows);
+        }
 
         setDetectionResult({
-          offsetX: minX,
-          offsetY: minY,
-          columns: cols,
-          rows: rows,
-          frameWidth: expectedFrameWidth,
-          frameHeight: expectedFrameHeight,
+          offsetX: finalOffsetX,
+          offsetY: finalOffsetY,
+          columns: finalColumns,
+          rows: finalRows,
+          frameWidth: finalFrameWidth,
+          frameHeight: finalFrameHeight,
           confidence
         });
       } catch (err) {
@@ -225,7 +275,6 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError,
               className="input-field" 
               value={gridSettings.offsetX} 
               onChange={handleChange('offsetX')} 
-              min={0} 
             />
           </div>
           <div className="input-group">
@@ -235,7 +284,6 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError,
               className="input-field" 
               value={gridSettings.offsetY} 
               onChange={handleChange('offsetY')} 
-              min={0} 
             />
           </div>
         </div>
