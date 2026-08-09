@@ -161,6 +161,7 @@ function App() {
                 gridSettings={gridSettings}
                 onSettingsChange={setGridSettings}
                 validationError={gridExceedsBounds ? "Grid exceeds image bounds." : null}
+                imageUrl={imageUrl}
               />
             </aside>
             <section className="workspace-main">
