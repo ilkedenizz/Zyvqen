@@ -8,25 +8,22 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.logo-group {
+.header-left {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  font-size: 18px;
+  gap: var(--spacing-md);
 }
 
 .brand-name {
   font-weight: 700;
+  font-size: 18px;
   color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
-.separator {
-  color: var(--text-secondary);
-}
-
 .tool-name {
   font-weight: 500;
+  font-size: 16px;
   color: var(--text-secondary);
 }
 
@@ -34,11 +31,6 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
-}
-
-.header-nav {
-  display: flex;
-  gap: var(--spacing-md);
 }
 
 .nav-item {

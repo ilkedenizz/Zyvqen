@@ -1,4 +1,4 @@
-.editor-panel {
+.settings-panel {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);

@@ -13,16 +13,11 @@ export function Header() {
   return (
     <header className="app-header">
       <div className="header-left">
-        <div className="logo-group">
-          <span className="brand-name">Zyvqen</span>
-          <span className="separator">/</span>
-          <span className="tool-name">Sprite Sheet Maker</span>
-        </div>
+        <span className="brand-name">Zyvqen</span>
+        <span className="tool-name">Sprite Sheet Maker</span>
       </div>
       <div className="header-right">
-        <nav className="header-nav">
-          <button className="nav-item">Tools</button>
-        </nav>
+        <button className="nav-item">Tools</button>
         <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>

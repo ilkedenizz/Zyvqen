@@ -1,6 +1,6 @@
-import './UploadArea.css';
+import './UploadZone.css';
 
-export function UploadArea() {
+export function UploadZone() {
   return (
     <div className="upload-container">
       <div className="upload-header">
@@ -11,7 +11,7 @@ export function UploadArea() {
       <div className="upload-dropzone">
         <div className="dropzone-content">
           <div className="upload-icon">📁</div>
-          <p className="upload-text">Drag and drop your sprites here</p>
+          <p className="upload-text">Drop your sprite here</p>
           <p className="upload-hint">Supports PNG, JPG, and WebP</p>
           <div className="upload-actions">
             <button className="button-primary">Browse files</button>
