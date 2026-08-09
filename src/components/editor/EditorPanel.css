@@ -1,0 +1,49 @@
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  height: 100%;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.setting-row {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.input-group {
+  flex: 1;
+}
+
+.bg-options {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.bg-option {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-color);
+  transition: transform var(--transition-speed), border-color var(--transition-speed);
+}
+
+.bg-option:hover {
+  transform: scale(1.1);
+}
+
+.bg-option.active {
+  border-color: var(--accent-color);
+}

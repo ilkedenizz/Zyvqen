@@ -1,0 +1,20 @@
+.action-panel {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-xl);
+}
+
+.generate-btn {
+  padding: var(--spacing-sm) var(--spacing-xl);
+}
+
+@media (max-width: 768px) {
+  .action-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
