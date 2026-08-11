@@ -4,6 +4,7 @@ import { UploadZone } from './components/UploadZone';
 import { SettingsPanel } from './components/SettingsPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import { ActionBar } from './components/ActionBar';
+import rakunImage from './assets/rakun.jpg';
 import './App.css';
 
 export interface ImageDimensions {
@@ -22,12 +23,12 @@ export interface GridSettings {
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(rakunImage);
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null);
   
   const [gridSettings, setGridSettings] = useState<GridSettings>({
-    columns: 4,
-    rows: 4,
+    columns: 7,
+    rows: 6,
     padding: 0,
     spacing: 0,
     offsetX: 0,
@@ -36,6 +37,16 @@ function App() {
   
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   const [previewTab, setPreviewTab] = useState<'source' | 'output'>('source');
+
+  useEffect(() => {
+    if (imageUrl === rakunImage) {
+      const img = new Image();
+      img.onload = () => {
+        setImageDimensions({ width: img.width, height: img.height });
+      };
+      img.src = rakunImage;
+    }
+  }, [imageUrl]);
 
   const handleFileSelect = (newFile: File) => {
     if (imageUrl) URL.revokeObjectURL(imageUrl);
