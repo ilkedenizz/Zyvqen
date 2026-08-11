@@ -74,7 +74,6 @@ function App() {
     if (!ctx) return;
 
     const { columns, rows, padding, spacing, offsetX, offsetY } = gridSettings;
-    const totalFrames = columns * rows;
     
     const frameWidth = (imageDimensions.width - offsetX - padding * 2 - spacing * (columns - 1)) / columns;
     const frameHeight = (imageDimensions.height - offsetY - padding * 2 - spacing * (rows - 1)) / rows;
@@ -82,25 +81,25 @@ function App() {
     // Bounds check
     if (frameWidth <= 0 || frameHeight <= 0) return;
 
-    // Output Canvas setup - horizontal sprite sheet
-    canvas.width = frameWidth * totalFrames;
-    canvas.height = frameHeight;
+    // Output Canvas setup - 2D grid sprite sheet
+    canvas.width = frameWidth * columns;
+    canvas.height = frameHeight * rows;
 
     const img = new Image();
     img.onload = () => {
-      let currentFrame = 0;
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < columns; c++) {
           const sourceX = offsetX + padding + c * (frameWidth + spacing);
           const sourceY = offsetY + padding + r * (frameHeight + spacing);
-          const destX = currentFrame * frameWidth;
+          
+          const destX = c * frameWidth;
+          const destY = r * frameHeight;
           
           ctx.drawImage(
             img,
             sourceX, sourceY, frameWidth, frameHeight,
-            destX, 0, frameWidth, frameHeight
+            destX, destY, frameWidth, frameHeight
           );
-          currentFrame++;
         }
       }
       

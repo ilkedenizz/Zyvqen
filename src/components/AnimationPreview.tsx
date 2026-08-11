@@ -6,13 +6,15 @@ interface AnimationPreviewProps {
   totalFrames: number;
   frameWidth: number;
   frameHeight: number;
+  columns: number;
 }
 
 export function AnimationPreview({ 
   generatedImageUrl, 
   totalFrames, 
   frameWidth, 
-  frameHeight 
+  frameHeight,
+  columns
 }: AnimationPreviewProps) {
   const [fps, setFps] = useState<number>(12);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -26,7 +28,7 @@ export function AnimationPreview({
   const renderFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
     const img = imageRef.current;
-    if (!canvas || !img || frameWidth <= 0 || frameHeight <= 0) return;
+    if (!canvas || !img || frameWidth <= 0 || frameHeight <= 0 || columns <= 0) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -34,16 +36,18 @@ export function AnimationPreview({
     // Clear canvas
     ctx.clearRect(0, 0, frameWidth, frameHeight);
 
-    // Draw specific frame from sprite sheet
-    // The sprite sheet has all frames laid out horizontally
-    const sourceX = frameIndex * frameWidth;
+    // Calculate source rectangle from the 2D grid generated sprite sheet
+    const column = frameIndex % columns;
+    const row = Math.floor(frameIndex / columns);
+    const sourceX = column * frameWidth;
+    const sourceY = row * frameHeight;
     
     ctx.drawImage(
       img,
-      sourceX, 0, frameWidth, frameHeight,
+      sourceX, sourceY, frameWidth, frameHeight,
       0, 0, frameWidth, frameHeight
     );
-  }, [frameWidth, frameHeight]);
+  }, [frameWidth, frameHeight, columns]);
 
   // Load the generated sprite sheet
   useEffect(() => {

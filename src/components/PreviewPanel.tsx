@@ -147,12 +147,13 @@ export function PreviewPanel({
                 <div className="image-wrapper">
                   <img src={generatedImageUrl || ''} alt="Sprite Output" className="preview-image output-image" />
                 </div>
-                {generatedImageUrl && totalFrames > 0 && frameWidth > 0 && frameHeight > 0 && (
+                {generatedImageUrl && totalFrames > 0 && frameWidth > 0 && frameHeight > 0 && gridSettings && (
                   <AnimationPreview 
                     generatedImageUrl={generatedImageUrl}
                     totalFrames={totalFrames}
                     frameWidth={frameWidth}
                     frameHeight={frameHeight}
+                    columns={gridSettings.columns}
                   />
                 )}
               </div>
