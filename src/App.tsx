@@ -4,7 +4,7 @@ import { UploadZone } from './components/UploadZone';
 import { SettingsPanel } from './components/SettingsPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import { ActionBar } from './components/ActionBar';
-import rakunImage from './assets/rakun.jpg';
+import rakunImage from './assets/rakun.png';
 import './App.css';
 
 export interface ImageDimensions {
