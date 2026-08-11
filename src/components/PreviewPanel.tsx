@@ -134,7 +134,11 @@ export function PreviewPanel({
         {!imageUrl ? (
           <div className="preview-empty-state">
             <div className="empty-state-content">
-              <span className="empty-state-icon">🖼️</span>
+              <svg className="empty-state-icon" viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
               <p className="empty-text">No sprite loaded</p>
               <p className="empty-subtext">Upload a sprite sheet to start previewing.</p>
             </div>

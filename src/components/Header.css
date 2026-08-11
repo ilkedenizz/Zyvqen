@@ -1,23 +1,22 @@
 .app-header {
-  background-color: var(--bg-panel);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   width: 100%;
-}
-
-.header-content {
+  max-width: 1180px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md) var(--spacing-xl);
-  max-width: 1280px;
-  margin: 0 auto;
-  width: 100%;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-top: var(--spacing-xs);
+}
+
+.header-content {
+  display: contents; /* Allows children to participate directly in app-header flexbox */
 }
 
 .header-left {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  gap: var(--spacing-md);
 }
 
 .brand-name {
@@ -32,7 +31,7 @@
   font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: 500;
-  margin-top: 2px;
+  margin: 0;
 }
 
 .header-right {
@@ -59,10 +58,12 @@
   align-items: center;
   justify-content: center;
   padding: 8px;
-  border-radius: 50%;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
 }
 
 .theme-toggle:hover {
   background-color: var(--bg-hover);
   color: var(--text-primary);
+  border-color: var(--border-color);
 }

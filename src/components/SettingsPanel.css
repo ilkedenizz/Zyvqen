@@ -1,19 +1,22 @@
 .settings-panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
-  padding-right: var(--spacing-md); /* Add a bit of space before the divider if wanted */
+  gap: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-title {
   font-size: var(--font-size-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin-bottom: var(--spacing-sm);
   padding-bottom: var(--spacing-xs);
   border-bottom: 1px solid var(--border-color);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
 }
 
 .settings-group {
@@ -31,52 +34,37 @@
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
-}
-
-.label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.input-field {
-  background-color: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-md);
-  font-family: inherit;
-  transition: all var(--transition-speed);
-  width: 100%;
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(92, 111, 255, 0.15);
-  background-color: var(--bg-panel);
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
   cursor: pointer;
   user-select: none;
+  background: var(--bg-hover);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  align-self: flex-start;
+  transition: all var(--transition-speed);
+}
+
+.checkbox-label:hover {
+  border-color: var(--border-color-focus);
 }
 
 .checkbox-input {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  background-color: var(--bg-hover);
+  border-radius: 3px;
+  background-color: var(--bg-input);
   cursor: pointer;
   position: relative;
   transition: all var(--transition-speed);
@@ -90,10 +78,10 @@
 .checkbox-input:checked::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 5px;
-  width: 4px;
-  height: 8px;
+  top: 1px;
+  left: 4px;
+  width: 3px;
+  height: 7px;
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
@@ -110,29 +98,29 @@
 }
 
 .bg-option {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--border-color);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all var(--transition-speed);
 }
 
 .bg-option:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: var(--text-muted);
 }
 
 .bg-option.active {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(92, 111, 255, 0.3);
+  box-shadow: 0 0 0 1px var(--accent-color);
 }
 
 .error-message {
-  color: #ff5c5c;
-  font-size: var(--font-size-sm);
-  background-color: rgba(255, 92, 92, 0.1);
+  color: #ef4444;
+  font-size: var(--font-size-xs);
+  background-color: rgba(239, 68, 68, 0.1);
   padding: var(--spacing-sm);
-  border-radius: var(--radius-md);
-  border-left: 3px solid #ff5c5c;
+  border-radius: var(--radius-sm);
+  border-left: 2px solid #ef4444;
 }
