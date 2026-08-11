@@ -57,11 +57,6 @@ export function UploadZone({ onFileSelect, currentFile, onClearFile }: UploadZon
 
   return (
     <div className="upload-container">
-      <div className="upload-header">
-        <h1 className="upload-title">Sprite Sheet Maker</h1>
-        <p className="upload-subtitle">Turn your sprites into game-ready sheets.</p>
-      </div>
-      
       <div 
         className={`upload-dropzone ${isDragOver ? 'drag-active' : ''}`}
         onDragOver={handleDragOver}

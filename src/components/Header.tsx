@@ -12,13 +12,14 @@ export function Header() {
 
   return (
     <header className="app-header">
-      <div className="header-left">
-        <span className="brand-name">Zyvqen</span>
-        <span className="tool-name">Sprite Sheet Maker</span>
-      </div>
-      <div className="header-right">
-        <button className="nav-item">Tools</button>
-        <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
+      <div className="header-content">
+        <div className="header-left">
+          <h1 className="brand-name">Sprite Sheet Maker</h1>
+          <p className="tool-name">Turn your sprites into game-ready sheets.</p>
+        </div>
+        <div className="header-right">
+          <button className="nav-item">Tools</button>
+          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
           {theme === 'dark' ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -37,6 +38,7 @@ export function Header() {
             </svg>
           )}
         </button>
+      </div>
       </div>
     </header>
   );

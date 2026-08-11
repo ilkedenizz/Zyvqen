@@ -133,7 +133,11 @@ export function PreviewPanel({
       <div className="preview-workspace">
         {!imageUrl ? (
           <div className="preview-empty-state">
-            <p className="empty-text">No sprite loaded</p>
+            <div className="empty-state-content">
+              <span className="empty-state-icon">🖼️</span>
+              <p className="empty-text">No sprite loaded</p>
+              <p className="empty-subtext">Upload a sprite sheet to start previewing.</p>
+            </div>
           </div>
         ) : (
           <div className="preview-image-container">
