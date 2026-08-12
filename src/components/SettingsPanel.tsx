@@ -1,14 +1,25 @@
-import { type ChangeEvent } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import type { GridSettings } from '../App';
+import { detectSpriteGrid } from '../utils/gridDetector';
 import './SettingsPanel.css';
 
 interface SettingsPanelProps {
   gridSettings: GridSettings;
   onSettingsChange: (settings: GridSettings) => void;
   validationError: string | null;
+  imageUrl: string | null;
 }
 
-export function SettingsPanel({ gridSettings, onSettingsChange, validationError }: SettingsPanelProps) {
+export function SettingsPanel({ gridSettings, onSettingsChange, validationError, imageUrl }: SettingsPanelProps) {
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detectFeedback, setDetectFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [prevImageUrl, setPrevImageUrl] = useState(imageUrl);
+
+  if (imageUrl !== prevImageUrl) {
+    setPrevImageUrl(imageUrl);
+    setDetectFeedback(null);
+  }
+
   const handleChange = (field: keyof GridSettings) => (e: ChangeEvent<HTMLInputElement>) => {
     let val = parseInt(e.target.value, 10);
     if (isNaN(val)) val = 0;
@@ -26,17 +37,60 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError 
     });
   };
 
+  const handleAutoDetect = async () => {
+    if (!imageUrl) return;
+    
+    setIsDetecting(true);
+    setDetectFeedback(null);
+    
+    try {
+      const result = await detectSpriteGrid(imageUrl);
+      
+      if (result && result.columns > 0 && result.rows > 0) {
+        onSettingsChange({
+          ...gridSettings,
+          columns: result.columns,
+          rows: result.rows
+        });
+        setDetectFeedback({
+          type: 'success',
+          message: `Grid detected: ${result.columns} × ${result.rows}`
+        });
+      } else {
+        setDetectFeedback({
+          type: 'error',
+          message: 'Grid could not be detected. Please set manually.'
+        });
+      }
+    } catch (err) {
+      console.error("Auto detect failed:", err);
+      setDetectFeedback({
+        type: 'error',
+        message: 'Detection failed.'
+      });
+    } finally {
+      setIsDetecting(false);
+    }
+  };
+
   return (
     <div className="panel settings-panel">
-      <div className="panel-header-row">
-        <h2 className="panel-title">Grid Settings</h2>
-        <button 
-          className="btn btn-secondary btn-sm" 
-          disabled={true}
-          title="Auto Detect — Coming soon"
-        >
-          Auto Detect (Coming Soon)
-        </button>
+      <div className="panel-header-col">
+        <div className="panel-header-row">
+          <h2 className="panel-title">Grid Settings</h2>
+          <button 
+            className="btn btn-secondary btn-sm auto-detect-btn" 
+            disabled={!imageUrl || isDetecting}
+            onClick={handleAutoDetect}
+          >
+            {isDetecting ? 'Detecting...' : 'Detect Grid'}
+          </button>
+        </div>
+        {detectFeedback && (
+          <div className={`detect-feedback ${detectFeedback.type === 'success' ? 'detect-feedback-success' : 'detect-feedback-error'}`}>
+            {detectFeedback.message}
+          </div>
+        )}
       </div>
       
       {validationError && (
@@ -125,4 +179,3 @@ export function SettingsPanel({ gridSettings, onSettingsChange, validationError 
     </div>
   );
 }
-
