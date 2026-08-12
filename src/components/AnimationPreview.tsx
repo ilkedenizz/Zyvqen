@@ -20,10 +20,15 @@ export function AnimationPreview({
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isLooping, setIsLooping] = useState<boolean>(true);
   const [currentFrame, setCurrentFrame] = useState<number>(0);
+  const [isImageLoaded, setIsImageLoaded] = useState<boolean>(false);
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const animationRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
+  
+  // Array of refs for the timeline canvases
+  const timelineCanvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
   const renderFrame = useCallback((frameIndex: number) => {
     const canvas = canvasRef.current;
@@ -49,18 +54,65 @@ export function AnimationPreview({
     );
   }, [frameWidth, frameHeight, columns]);
 
+  const [prevImageUrl, setPrevImageUrl] = useState(generatedImageUrl);
+  if (generatedImageUrl !== prevImageUrl) {
+    setPrevImageUrl(generatedImageUrl);
+    setIsImageLoaded(false);
+  }
+
   // Load the generated sprite sheet
   useEffect(() => {
     const img = new Image();
     img.onload = () => {
       imageRef.current = img;
+      setIsImageLoaded(true);
       renderFrame(currentFrame);
     };
     img.src = generatedImageUrl;
     return () => {
       imageRef.current = null;
+      setIsImageLoaded(false);
     };
-  }, [generatedImageUrl, currentFrame, renderFrame]); // Added missing dependencies
+  }, [generatedImageUrl, currentFrame, renderFrame]);
+
+  // Render all timeline frames when image is loaded
+  useEffect(() => {
+    if (!isImageLoaded || !imageRef.current || frameWidth <= 0 || frameHeight <= 0 || columns <= 0) return;
+    
+    const img = imageRef.current;
+    
+    for (let i = 0; i < totalFrames; i++) {
+      const canvas = timelineCanvasRefs.current[i];
+      if (!canvas) continue;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+      
+      const column = i % columns;
+      const row = Math.floor(i / columns);
+      const sourceX = column * frameWidth;
+      const sourceY = row * frameHeight;
+      
+      ctx.clearRect(0, 0, frameWidth, frameHeight);
+      ctx.drawImage(
+        img,
+        sourceX, sourceY, frameWidth, frameHeight,
+        0, 0, frameWidth, frameHeight
+      );
+    }
+  }, [isImageLoaded, totalFrames, frameWidth, frameHeight, columns]);
+
+  // Scroll active thumbnail into view
+  useEffect(() => {
+    const activeCanvas = timelineCanvasRefs.current[currentFrame];
+    if (activeCanvas && activeCanvas.parentElement) {
+      activeCanvas.parentElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [currentFrame]);
 
   // Handle animation loop
   useEffect(() => {
@@ -142,6 +194,11 @@ export function AnimationPreview({
     setIsPlaying(false);
     setCurrentFrame(prev => (prev - 1 + totalFrames) % totalFrames);
   };
+  
+  const jumpToFrame = (index: number) => {
+    setCurrentFrame(index);
+    // Let it keep playing if it was playing, or stay paused if paused.
+  };
 
   if (totalFrames <= 0 || frameWidth <= 0 || frameHeight <= 0) return null;
 
@@ -215,6 +272,25 @@ export function AnimationPreview({
             max={60}
           />
         </div>
+      </div>
+      
+      {/* Frame Timeline */}
+      <div className="frame-timeline">
+        {Array.from({ length: totalFrames }).map((_, index) => (
+          <div 
+            key={index} 
+            className={`timeline-frame-wrapper ${currentFrame === index ? 'active' : ''}`}
+            onClick={() => jumpToFrame(index)}
+          >
+            <span className="timeline-frame-number">{index + 1}</span>
+            <canvas
+              ref={(el) => { timelineCanvasRefs.current[index] = el; }}
+              width={frameWidth}
+              height={frameHeight}
+              className="timeline-canvas"
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
